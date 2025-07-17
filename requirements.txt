@@ -67,6 +67,7 @@ langsmith==0.4.6
 latex2mathml==3.78.0
 lazy-loader==0.4
 lxml==5.4.0
+mariadb==1.1.13
 markdown-it-py==3.0.0
 marko==2.1.4
 markupsafe==3.0.2
