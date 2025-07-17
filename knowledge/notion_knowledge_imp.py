@@ -60,8 +60,7 @@ class NotionKnowledgeImp(KnowledgeService):
             self._vector_db = ChromaDb(
                 collection="notion_knowledge_base",
                 path="./vector_db/notion_knowledge_base",
-                embedding_model=GeminiEmbedder(),
-                chunking_strategy=FixedSizeChunking(chunk_size=512, overlap=50)
+                embedder=GeminiEmbedder(),
             )
             agno_documents: list[AgnoDocument] = metadata_handler(documents=self._documents if self._documents is not None else [])
             self.knowledge_base = DocumentKnowledgeBase(vector_db=self._vector_db, documents=agno_documents)
