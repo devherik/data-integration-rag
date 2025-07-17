@@ -76,3 +76,7 @@ class NotionKnowledgeImp(KnowledgeService):
             log_message(f"Error processing Notion data: {e}", "ERROR")
         finally:
             log_message("Finished processing Notion data.", "SUCCESS")
+            
+    async def reload_data(self) -> None:
+        """Reload the data from the source."""
+        pass

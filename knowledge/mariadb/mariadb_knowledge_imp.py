@@ -32,3 +32,7 @@ class MariaDBKnowledgeImp(KnowledgeService):
     async def _process_data(self) -> None:
         """Process the loaded documents."""
         pass
+    
+    async def reload_data(self) -> None:
+        """Reload the data from the source."""
+        pass
