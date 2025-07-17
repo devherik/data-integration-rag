@@ -3,11 +3,14 @@ from knowledge.knowledge_service import KnowledgeService
 from typing import Optional, List
 from agno.knowledge.document import DocumentKnowledgeBase
 from agno.vectordb.chroma import ChromaDb
+from sqlalchemy import Engine, create_engine
+from urllib.parse import quote_plus
 
 from utils.logger.logger import log_message
 
 class MariaDBKnowledgeImp(KnowledgeService):
     _instance: Optional[KnowledgeService] = None
+    _engine: Optional[Engine] = None
     _vector_db: Optional[ChromaDb] = None
     knowledge_base: Optional[DocumentKnowledgeBase] = None
     
@@ -22,6 +25,18 @@ class MariaDBKnowledgeImp(KnowledgeService):
 
     async def initialize(self) -> None:
         """Initialize the knowledge service."""
+        try:
+            host = os.getenv("MARIADB_HOST", "localhost")
+            port = os.getenv("MARIADB_PORT", "3306")
+            user = os.getenv("MARIADB_USER", "root")
+            password = quote_plus(os.getenv("MARIADB_PASSWORD", "your_password"))
+            engine_path = f"mariadb+mariadbconnector://{user}:{password}@{host}:{port}/rci"
+            self._engine = create_engine(engine_path)
+            self._engine.connect()
+            log_message("MariaDB engine created successfully.", "SUCCESS")
+        except Exception as e:
+            log_message(f"Error creating MariaDB engine: {e}", "ERROR")
+            return
         await self._load_data()
         await self._process_data()
     
