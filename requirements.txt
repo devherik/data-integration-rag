@@ -110,6 +110,7 @@ pydantic-core==2.33.2
 pydantic-settings==2.10.1
 pygments==2.19.2
 pylatexenc==2.10
+pymupdf==1.26.3
 pypdfium2==4.30.1
 pypika==0.48.9
 pyproject-hooks==1.2.0

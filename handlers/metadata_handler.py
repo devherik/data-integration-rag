@@ -1,4 +1,7 @@
 from typing import Any, Dict, List, Union
+import fitz
+
+from utils.logger.logger import log_message
 
 def metadata_handler(data: Union[Dict, List, Any], parent_key: str = "") -> Dict[str, Any]:
     """
@@ -13,6 +16,22 @@ def metadata_handler(data: Union[Dict, List, Any], parent_key: str = "") -> Dict
         return {}
     
     cleaned_data = {}
+    
+    if isinstance(data, str) and data.lower().endswith('.pdf'):
+        # Special handling for PDF metadata
+        try:
+            cleaned_data[parent_key] = data
+            pdf_text = ""
+            with fitz.open(data) as pdf_document:
+                for page in pdf_document:
+                    pdf_text += page.get_textbox(rect=page.rect)
+            cleaned_data[f"{parent_key}_text"] = pdf_text
+        except Exception as e:
+            cleaned_data[f"{parent_key}_content"] = f"Error processing PDF: {e}"
+            log_message(f"Error processing PDF metadata: {e}", "ERROR")
+            return cleaned_data
+
+    # Handle simple data types and None
     if isinstance(data, (str, int, float, bool)) or data is None:
         if parent_key:
             cleaned_data[parent_key] = data

@@ -7,6 +7,11 @@ MAGENTA = '\033[95m'
 RESET = '\033[0m'
 
 def log_message(message: str, level: str = "INFO") -> None:
+    """
+    Logs a message with a specific level and color.
+        message (str): The message to log.
+        level (str): The log level (e.g., "INFO", "SUCCESS", "ERROR", "WARNING", "DEBUG").
+    """
     color = {
         "INFO": BLUE,
         "SUCCESS": GREEN,
