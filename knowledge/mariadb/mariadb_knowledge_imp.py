@@ -3,7 +3,7 @@ from knowledge.knowledge_service import KnowledgeService
 from typing import Optional, List
 from agno.knowledge.document import DocumentKnowledgeBase
 from agno.vectordb.chroma import ChromaDb
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import Connection, Engine, create_engine
 from urllib.parse import quote_plus
 
 from utils.logger.logger import log_message
@@ -11,6 +11,7 @@ from utils.logger.logger import log_message
 class MariaDBKnowledgeImp(KnowledgeService):
     _instance: Optional[KnowledgeService] = None
     _engine: Optional[Engine] = None
+    _db_connection: Optional[Connection] = None
     _vector_db: Optional[ChromaDb] = None
     knowledge_base: Optional[DocumentKnowledgeBase] = None
     
@@ -32,7 +33,7 @@ class MariaDBKnowledgeImp(KnowledgeService):
             password = quote_plus(os.getenv("MARIADB_PASSWORD", "your_password"))
             engine_path = f"mariadb+mariadbconnector://{user}:{password}@{host}:{port}/rci"
             self._engine = create_engine(engine_path)
-            self._engine.connect()
+            self._db_connection = self._engine.connect()
             log_message("MariaDB engine created successfully.", "SUCCESS")
         except Exception as e:
             log_message(f"Error creating MariaDB engine: {e}", "ERROR")
@@ -42,7 +43,8 @@ class MariaDBKnowledgeImp(KnowledgeService):
     
     async def _load_data(self) -> None:
         """Load data from the source."""
-        pass
+        # try:
+        #     self._db_connection.execute
     
     async def _process_data(self) -> None:
         """Process the loaded documents."""
@@ -54,6 +56,9 @@ class MariaDBKnowledgeImp(KnowledgeService):
     
     async def close(self) -> None:
         """Close the knowledge service."""
-        if self._engine:
-            self._engine.dispose()
-            log_message("MariaDB engine closed successfully.", "SUCCESS")
+        try:
+            if self._db_connection:
+                self._db_connection.close()
+                log_message("MariaDB connection closed successfully.", "SUCCESS")
+        except Exception as e:
+            log_message(f"Error closing MariaDB connection: {e}", "ERROR")
