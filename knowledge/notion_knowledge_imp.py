@@ -60,9 +60,22 @@ class NotionKnowledgeImp(KnowledgeService):
             self._vector_db = ChromaDb(
                 collection="notion_knowledge_base",
                 path="./vector_db/notion_knowledge_base",
+                persistent_client=True,
                 embedder=GeminiEmbedder(),
             )
-            agno_documents: list[AgnoDocument] = metadata_handler(documents=self._documents if self._documents is not None else [])
+            agno_documents: list[AgnoDocument] = []
+            if not self._documents:
+                raise ValueError("No documents to process.")
+            for doc in self._documents:
+                cleaned_meta = {}
+                if doc.metadata:
+                    cleaned_meta = metadata_handler(doc.metadata)
+                    agno_doc = AgnoDocument(
+                        id=doc.id,
+                        content=doc.page_content,
+                        meta_data=cleaned_meta
+                    )
+                    agno_documents.append(agno_doc)
             self.knowledge_base = DocumentKnowledgeBase(vector_db=self._vector_db, documents=agno_documents)
             self.knowledge_base.load(recreate=False)
         except Exception as e:
