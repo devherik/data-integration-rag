@@ -3,18 +3,12 @@ from knowledge.knowledge_service import KnowledgeService
 from handlers.metadata_handler import metadata_handler
 from agno.knowledge.document import DocumentKnowledgeBase
 from agno.vectordb.chroma import ChromaDb
-from agno.document.chunking.fixed import FixedSizeChunking
 from agno.document.base import Document as AgnoDocument
 from agno.embedder.google import GeminiEmbedder
 from typing import List, Optional
 from langchain_community.document_loaders import NotionDBLoader
 from langchain_core.documents.base import Document
-
-# Define ANSI escape codes for colors and reset
-RED = '\033[91m'
-GREEN = '\033[92m'
-BLUE = '\033[94m'
-RESET = '\033[0m'  # Resets all formatting
+from utils.logger.logger import log_message
 
 class NotionKnowledgeImp(KnowledgeService):
     _instance: Optional[KnowledgeService] = None
@@ -29,7 +23,7 @@ class NotionKnowledgeImp(KnowledgeService):
     
     def __init__(self) -> None:
         super().__init__()
-        print(f"{BLUE}INFO {RESET}NotionKnowledgeImp initialized{RESET}")
+        log_message("NotionKnowledgeImp initialized", "INFO")
 
     async def initialize(self) -> None:
         """Initialize the knowledge service."""
@@ -47,12 +41,12 @@ class NotionKnowledgeImp(KnowledgeService):
             self._documents = loader.load()
             if not self._documents:
                 raise ValueError("No documents found in the Notion database.")
-            print(f"{GREEN}SUCCESS {RESET}Loaded {len(self._documents)} documents from Notion.{RESET}")
+            log_message(f"Loaded {len(self._documents)} documents from Notion.", "SUCCESS")
         except ValueError as e:
-            print(f"{RED}ERROR {RESET}Error loading Notion data: {e}{RESET}")
+            log_message(f"Error loading Notion data: {e}", "ERROR")
             return
         finally:
-            print(f"{GREEN}SUCCESS {RESET}Finished loading Notion data.{RESET}")
+            log_message("Finished loading Notion data.", "SUCCESS")
 
     async def _process_data(self) -> None:
         """Process the loaded Notion data."""
@@ -79,6 +73,6 @@ class NotionKnowledgeImp(KnowledgeService):
             self.knowledge_base = DocumentKnowledgeBase(vector_db=self._vector_db, documents=agno_documents)
             self.knowledge_base.load(recreate=False)
         except Exception as e:
-            print(f"{RED}ERROR {RESET}Error processing Notion data: {e}{RESET}")
+            log_message(f"Error processing Notion data: {e}", "ERROR")
         finally:
-            print(f"{GREEN}SUCCESS {RESET}Finished processing Notion data.{RESET}")
+            log_message("Finished processing Notion data.", "SUCCESS")
