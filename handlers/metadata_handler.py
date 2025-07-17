@@ -1,5 +1,3 @@
-from agno.document.base import Document as AgnoDocument
-from langchain_core.documents.base import Document
 from typing import Any, Dict, List, Union
 
 def metadata_handler(data: Union[Dict, List, Any], parent_key: str = "") -> Dict[str, Any]:
@@ -7,17 +5,19 @@ def metadata_handler(data: Union[Dict, List, Any], parent_key: str = "") -> Dict
     Handles metadata retrieval for documents.
 
     Returns:
-        List[Document]: A list of Document objects containing metadata.
+        A dictionary with cleaned metadata.
+        If the input is a dictionary, it flattens the structure and handles special cases like
+        Notion-style date objects.
     """
-    # This is a placeholder implementation. Replace with actual logic to retrieve metadata.
     if not data:
         return {}
-    # Example logic to convert Document to AgnoDocument
+    
     cleaned_data = {}
     if isinstance(data, (str, int, float, bool)) or data is None:
         if parent_key:
             cleaned_data[parent_key] = data
             return cleaned_data
+        
     if isinstance(data, dict):
         # Special handling for Notion-style date objects
         if 'start' in data or 'end' in data:
@@ -34,10 +34,12 @@ def metadata_handler(data: Union[Dict, List, Any], parent_key: str = "") -> Dict
             new_key = f"{parent_key}_{key}" if parent_key else key
             cleaned_data.update(metadata_handler(value, new_key))
         return cleaned_data
+    
     elif isinstance(data, list):
         # Handle lists by recursively processing each item
         for index, item in enumerate(data):
             new_key = f"{parent_key}_{index}" if parent_key else str(index)
             cleaned_data.update(metadata_handler(item, new_key))
         return cleaned_data
+    
     return cleaned_data
