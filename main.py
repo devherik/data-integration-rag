@@ -1,7 +1,7 @@
 import os
 import asyncio
 from dotenv import load_dotenv
-from knowledge.notion_knowledge_imp import NotionKnowledgeImp
+from knowledge.notion.notion_knowledge_imp import NotionKnowledgeImp
 from utils.logger.logger import log_message
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
