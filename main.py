@@ -1,6 +1,7 @@
 import os
 import asyncio
 from dotenv import load_dotenv
+from knowledge.mariadb.mariadb_knowledge_imp import MariaDBKnowledgeImp
 from knowledge.notion.notion_knowledge_imp import NotionKnowledgeImp
 from utils.logger.logger import log_message
 
@@ -14,6 +15,8 @@ else:
 async def main():
     notion_knowledge = NotionKnowledgeImp()
     await notion_knowledge.initialize()
-
+    mariadb_knowledge = MariaDBKnowledgeImp()
+    await mariadb_knowledge.initialize()
+    
 if __name__ == "__main__":
     asyncio.run(main())
