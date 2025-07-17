@@ -1,11 +1,11 @@
+import asyncio
 from knowledge.notion_knowledge_imp import NotionKnowledgeImp
 
 
-def main():
+async def main():
     print("Hello from data-integration-rag!")
     notion_knowledge = NotionKnowledgeImp()
-    print(notion_knowledge)
-
+    await notion_knowledge.initialize()
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

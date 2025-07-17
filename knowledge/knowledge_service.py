@@ -1,6 +1,11 @@
 from abc import ABC, abstractmethod
 
 class KnowledgeService(ABC):
+    
+    @abstractmethod
+    async def initialize(self) -> None:
+        """Initialize the knowledge service."""
+        pass
 
     @abstractmethod
     async def _load_data(self) -> None:

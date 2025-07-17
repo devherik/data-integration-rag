@@ -1,5 +1,5 @@
-from knowledge.knowledge_service import KnowledgeService
 import os
+from knowledge.knowledge_service import KnowledgeService
 from agno.knowledge.document import DocumentKnowledgeBase
 from agno.vectordb.chroma import ChromaDb
 from agno.document.chunking.fixed import FixedSizeChunking
@@ -19,9 +19,13 @@ class NotionKnowledgeImp(KnowledgeService):
         return cls._instance
     
     def __init__(self) -> None:
-        print("Initializing NotionKnowledgeImp")
         super().__init__()
         print("NotionKnowledgeImp initialized")
+        
+    async def initialize(self) -> None:
+        """Initialize the knowledge service."""
+        await self._load_data()
+        await self._process_data()
 
     async def _load_data(self) -> None:
         """Load data from Notion."""
