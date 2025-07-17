@@ -17,6 +17,7 @@ async def main():
     # await notion_knowledge.initialize()
     mariadb_knowledge = MariaDBKnowledgeImp()
     await mariadb_knowledge.initialize()
-    
+    await mariadb_knowledge.close()
+
 if __name__ == "__main__":
     asyncio.run(main())

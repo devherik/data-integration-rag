@@ -80,3 +80,7 @@ class NotionKnowledgeImp(KnowledgeService):
     async def reload_data(self) -> None:
         """Reload the data from the source."""
         pass
+    
+    async def close(self) -> None:
+        """Close the knowledge service."""
+        pass

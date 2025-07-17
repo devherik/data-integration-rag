@@ -51,3 +51,9 @@ class MariaDBKnowledgeImp(KnowledgeService):
     async def reload_data(self) -> None:
         """Reload the data from the source."""
         pass
+    
+    async def close(self) -> None:
+        """Close the knowledge service."""
+        if self._engine:
+            self._engine.dispose()
+            log_message("MariaDB engine closed successfully.", "SUCCESS")
