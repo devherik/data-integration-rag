@@ -1,8 +1,11 @@
 import os
+from handlers.database_data_handler import databaseDataHandler
 from knowledge.knowledge_service import KnowledgeService
 from typing import Optional, List, Any
 from agno.knowledge.document import DocumentKnowledgeBase
 from agno.vectordb.chroma import ChromaDb
+from agno.document.base import Document as AgnoDocument
+from agno.embedder.google import GeminiEmbedder
 from sqlalchemy import Connection, Engine, create_engine, text, CursorResult
 from urllib.parse import quote_plus
 
@@ -48,14 +51,49 @@ class MariaDBKnowledgeImp(KnowledgeService):
             return
         try:
             self._documents = self._db_connection.execute(text("SELECT * FROM tb_rci"))
-            for row in self._documents:
-                log_message(f"Row: {row}", "DEBUG")
         except Exception as e:
             log_message(f"Error loading data into MariaDB: {e}", "ERROR")
 
     async def _process_data(self) -> None:
         """Process the loaded documents."""
-        pass
+        try:
+            self._vector_db = ChromaDb(
+                collection="mariadb_knowledge_base",
+                path="./vector_db/mariadb_knowledge_base",
+                persistent_client=True,
+                embedder=GeminiEmbedder(),
+            )
+            agno_documents: list[AgnoDocument] = []
+            if not self._documents:
+                raise ValueError("No documents to process.")
+            log_message(f"Number of documents: {self._documents.rowcount}", "DEBUG")
+            for row in self._documents.mappings():
+                # Process the row to create a clean metadata dictionary.
+                metadata = databaseDataHandler(row.items())
+
+                # Generate a unique ID from the metadata, falling back to a default.
+                # Ensure your databaseDataHandler provides a consistent 'ID' key.
+                doc_id = str(metadata.get("ID", f"unknown_id_{row.get('id', 'no_pk')}"))
+
+                # Create a structured string representation of the row for the content.
+                # This format can improve search and embedding quality.
+                content = ", ".join([f"{key}: {value}" for key, value in row.items() if value is not None])
+
+                # Create the AgnoDocument instance.
+                agno_doc = AgnoDocument(
+                    id=doc_id,
+                    content=content,
+                    meta_data=metadata
+                )
+                log_message(f"Created AgnoDocument: {agno_doc.id}", "DEBUG")
+                agno_documents.append(agno_doc)
+            self.knowledge_base = DocumentKnowledgeBase(vector_db=self._vector_db, documents=agno_documents)
+            self.knowledge_base.load(recreate=False)
+        except Exception as e:
+            log_message(f"Error processing MariaDB data: {e}", "ERROR")
+            return
+        finally:
+            log_message("Finished processing MariaDB data.", "SUCCESS")
     
     async def reload_data(self) -> None:
         """Reload the data from the source."""
