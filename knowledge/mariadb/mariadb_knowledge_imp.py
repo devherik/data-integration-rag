@@ -1,9 +1,9 @@
 import os
 from knowledge.knowledge_service import KnowledgeService
-from typing import Optional, List
+from typing import Optional, List, Any
 from agno.knowledge.document import DocumentKnowledgeBase
 from agno.vectordb.chroma import ChromaDb
-from sqlalchemy import Connection, Engine, create_engine
+from sqlalchemy import Connection, Engine, create_engine, text, CursorResult
 from urllib.parse import quote_plus
 
 from utils.logger.logger import log_message
@@ -12,6 +12,7 @@ class MariaDBKnowledgeImp(KnowledgeService):
     _instance: Optional[KnowledgeService] = None
     _engine: Optional[Engine] = None
     _db_connection: Optional[Connection] = None
+    _documents: Optional[CursorResult[Any]] = None
     _vector_db: Optional[ChromaDb] = None
     knowledge_base: Optional[DocumentKnowledgeBase] = None
     
@@ -43,9 +44,15 @@ class MariaDBKnowledgeImp(KnowledgeService):
     
     async def _load_data(self) -> None:
         """Load data from the source."""
-        # try:
-        #     self._db_connection.execute
-    
+        if not self._db_connection:
+            return
+        try:
+            self._documents = self._db_connection.execute(text("SELECT * FROM tb_rci"))
+            for row in self._documents:
+                log_message(f"Row: {row}", "DEBUG")
+        except Exception as e:
+            log_message(f"Error loading data into MariaDB: {e}", "ERROR")
+
     async def _process_data(self) -> None:
         """Process the loaded documents."""
         pass
