@@ -41,7 +41,7 @@ class NotionKnowledgeImp(KnowledgeService):
             self._documents = loader.load()
             if not self._documents:
                 raise ValueError("No documents found in the Notion database.")
-            log_message(f"Loaded {len(self._documents)} documents from Notion.", "SUCCESS")
+            log_message(f"Loaded {len(self._documents)} documents from Notion.", "DEBUG")
         except ValueError as e:
             log_message(f"Error loading Notion data: {e}", "ERROR")
             return

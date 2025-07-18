@@ -51,6 +51,7 @@ class MariaDBKnowledgeImp(KnowledgeService):
             return
         try:
             self._documents = self._db_connection.execute(text("SELECT * FROM tb_rci"))
+            log_message(f"Loaded {self._documents.rowcount} documents from MariaDB.", "DEBUG")
         except Exception as e:
             log_message(f"Error loading data into MariaDB: {e}", "ERROR")
 
@@ -66,14 +67,18 @@ class MariaDBKnowledgeImp(KnowledgeService):
             agno_documents: list[AgnoDocument] = []
             if not self._documents:
                 raise ValueError("No documents to process.")
-            log_message(f"Number of documents: {self._documents.rowcount}", "DEBUG")
             for row in self._documents.mappings():
                 # Process the row to create a clean metadata dictionary.
-                metadata = databaseDataHandler(row.items())
+                raw_metadata = databaseDataHandler(row.items())
+                # Filter out None values, as the vector database does not support them.
+                metadata = {k: v for k, v in raw_metadata.items() if v is not None}
 
                 # Generate a unique ID from the metadata, falling back to a default.
                 # Ensure your databaseDataHandler provides a consistent 'ID' key.
-                doc_id = str(metadata.get("ID", f"unknown_id_{row.get('id', 'no_pk')}"))
+                doc_id = str(
+                    metadata.get("ID", f"unknown_id_{row.get('id', 'no_pk')}")
+                    or metadata.get("id", f"unknown_id_{row.get('id', 'no_pk')}")
+                )
 
                 # Create a structured string representation of the row for the content.
                 # This format can improve search and embedding quality.
@@ -85,7 +90,6 @@ class MariaDBKnowledgeImp(KnowledgeService):
                     content=content,
                     meta_data=metadata
                 )
-                log_message(f"Created AgnoDocument: {agno_doc.id}", "DEBUG")
                 agno_documents.append(agno_doc)
             self.knowledge_base = DocumentKnowledgeBase(vector_db=self._vector_db, documents=agno_documents)
             self.knowledge_base.load(recreate=False)

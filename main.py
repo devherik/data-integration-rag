@@ -13,8 +13,8 @@ else:
     log_message(f".env file not found at {env_path}", "WARNING")
 
 async def main():
-    # notion_knowledge = NotionKnowledgeImp()
-    # await notion_knowledge.initialize()
+    notion_knowledge = NotionKnowledgeImp()
+    await notion_knowledge.initialize()
     mariadb_knowledge = MariaDBKnowledgeImp()
     await mariadb_knowledge.initialize()
     await mariadb_knowledge.close()
