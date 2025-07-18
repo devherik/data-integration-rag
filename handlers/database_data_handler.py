@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import Any, Dict, List
 
 def databaseDataHandler(data: Any, parent_key: str = "") -> Dict[str, Any]:
@@ -20,7 +20,7 @@ def databaseDataHandler(data: Any, parent_key: str = "") -> Dict[str, Any]:
             cleaned_data.update(databaseDataHandler(value, parent_key=key))
         elif isinstance(value, (str, int, float, bool)) or value is None:
             cleaned_data[key] = value
-        elif isinstance(value, datetime):
+        elif isinstance(value, (datetime, date)):
             # If data is a datetime object, convert it to ISO format
             cleaned_data[key] = value.isoformat()
         elif isinstance(value, list):
